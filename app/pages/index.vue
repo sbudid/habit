@@ -28,6 +28,12 @@ const familyUseCases = [
   },
 ];
 
+const pricingIdeas = [
+  { plan: 'Free', price: 'Rp0', detail: '3 rutinitas aktif untuk mulai coba' },
+  { plan: 'Personal', price: 'Rp19rb/bln', detail: 'Habit pribadi tanpa batas ringan' },
+  { plan: 'Family', price: 'Rp49rb/bln', detail: 'Nanti bisa untuk pasangan & anak' },
+];
+
 watchEffect(async () => {
   if (user.value) {
     await navigateTo(`/${user.value.login}`);
@@ -40,7 +46,7 @@ watchEffect(async () => {
     <div class="relative z-10 flex w-full flex-col gap-6">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-lime-300/40 bg-lime-300 text-2xl shadow-lg shadow-lime-500/20">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-lime-300/40 bg-lime-300 text-2xl font-bold text-lime-950 shadow-lg shadow-lime-500/20">
             R
           </div>
           <div>
@@ -48,7 +54,7 @@ watchEffect(async () => {
             <div class="mt-1 text-xs text-white/45">Habit keluarga Indonesia</div>
           </div>
         </div>
-        <span class="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">MVP lokal</span>
+        <a href="#masuk" class="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70 transition hover:bg-white/15">Coba MVP</a>
       </div>
 
       <div class="flex flex-col gap-3">
@@ -82,7 +88,9 @@ watchEffect(async () => {
         </span>
       </div>
 
-      <div class="flex flex-col gap-3">
+      <EmailLoginForm />
+
+      <div class="grid gap-2">
         <div v-for="item in familyUseCases" :key="item.title" class="rounded-3xl border border-white/10 bg-black/20 p-4">
           <div class="mb-2 flex items-center gap-2 text-sm font-semibold">
             <UIcon :name="item.icon" class="h-5 w-5 text-lime-300" />
@@ -92,14 +100,22 @@ watchEffect(async () => {
         </div>
       </div>
 
-      <div class="sticky bottom-0 -mx-1 flex flex-col gap-2 rounded-3xl border border-white/10 bg-black/40 p-3 backdrop-blur-xl">
-        <a href="/api/auth/github" class="button bg-lime-300 px-4 py-3 font-semibold text-lime-950 hover:bg-lime-200">
-          <UIcon name="i-simple-icons-github" class="h-5 w-5" />
-          Masuk dulu pakai GitHub
-        </a>
-        <p class="text-center text-[11px] leading-4 text-white/45">
-          Auth ini masih sementara buat MVP. Kalau mau dijual Indonesia, next step-nya ganti ke Google/email login.
-        </p>
+      <div class="rounded-3xl border border-white/10 bg-white/10 p-4">
+        <div class="mb-3 text-sm font-semibold">Ide harga kalau nanti dijual</div>
+        <div class="grid gap-2">
+          <div v-for="item in pricingIdeas" :key="item.plan" class="flex items-center justify-between gap-3 rounded-2xl bg-black/20 px-3 py-2">
+            <div>
+              <div class="text-sm font-semibold">{{ item.plan }}</div>
+              <div class="text-xs text-white/45">{{ item.detail }}</div>
+            </div>
+            <div class="text-xs font-semibold text-lime-200">{{ item.price }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-3xl border border-white/10 bg-black/25 p-3 text-center text-[11px] leading-4 text-white/35">
+        GitHub login masih tersedia buat dev/admin:
+        <a href="/api/auth/github" class="text-lime-200 underline underline-offset-4">masuk pakai GitHub</a>
       </div>
     </div>
   </Card>

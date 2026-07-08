@@ -1,13 +1,21 @@
 <script setup lang="ts">
 defineProps<{ user: User }>();
+
 const { clear } = useUserSession();
+
 const openEditProfile = ref(false);
+
 const colorMode = useColorMode();
 
 const isDarkMode = computed({
   get: () => colorMode.preference === 'dark',
   set: () => (colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'),
 });
+
+async function signOut() {
+  await clear();
+  await navigateTo('/');
+}
 </script>
 
 <template>
@@ -15,6 +23,7 @@ const isDarkMode = computed({
     <button class="button bg-white/20 p-1.5 hover:bg-white/25">
       <UIcon name="i-heroicons-cog-8-tooth" class="h-5 w-5" />
     </button>
+
     <template #panel="{ close }">
       <div class="dropdown">
         <div
@@ -24,26 +33,31 @@ const isDarkMode = computed({
               openEditProfile = true;
             }
           "
-          class="m-2 flex w-36 cursor-pointer items-center gap-3 rounded-lg p-2 transition hover:bg-black/30">
+          class="m-2 flex w-40 cursor-pointer items-center gap-3 rounded-lg p-2 transition hover:bg-black/30">
           <UAvatar :src="user?.avatarUrl" size="md" />
           <div class="flex flex-col">
-            <div class="line-clamp-1 font-medium">{{ user?.name }}</div>
-            <div>@{{ user?.login }}</div>
+            <div class="line-clamp-1 font-medium">{{ user?.name || user?.login }}</div>
+            <div class="text-xs text-white/50">@{{ user?.login }}</div>
           </div>
         </div>
+
         <div class="border-b border-white/10"></div>
+
         <div @click="isDarkMode = !isDarkMode" class="m-1 flex cursor-pointer items-center gap-3 rounded-lg p-2 transition hover:bg-black/30">
           <UIcon :name="colorMode.preference === 'dark' || colorMode.preference === 'system' ? 'i-heroicons-moon' : 'i-heroicons-sun'" class="h-5 w-5" />
-          <span>Dark mode</span>
+          <span>Mode gelap</span>
         </div>
+
         <div class="border-b border-white/5"></div>
-        <div @click="clear()" class="m-1 flex cursor-pointer items-center gap-3 rounded-lg p-2 transition hover:bg-black/30">
+
+        <div @click="signOut" class="m-1 flex cursor-pointer items-center gap-3 rounded-lg p-2 transition hover:bg-black/30">
           <UIcon name="i-heroicons-arrow-right-on-rectangle-20-solid" class="h-5 w-5" />
-          <span>Sign out</span>
+          <span>Keluar</span>
         </div>
       </div>
     </template>
   </UPopover>
+
   <UModal
     v-model="openEditProfile"
     :ui="{ container: 'items-center', width: 'w-96', background: '', shadow: '', overlay: { base: 'backdrop-blur-2xl', background: 'bg-white/5 dark:bg-black/60' } }">

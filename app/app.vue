@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  htmlAttrs: { lang: 'en' },
+  htmlAttrs: { lang: 'id' },
   link: [
     { rel: 'icon', href: '/icon.png' },
     { rel: 'apple-touch-icon', href: '/icon.png' },
@@ -9,21 +9,18 @@ useHead({
 });
 
 useSeoMeta({
-  title: 'Habit',
-  description: 'A minimalistic habit tracker application to track and manage your daily habits with ease',
-  ogTitle: 'Habit',
-  ogDescription: 'A minimalistic habit tracker application to track and manage your daily habits with ease',
+  title: 'Rutina — Habit Keluarga Indonesia',
+  description: 'Aplikasi rutinitas harian untuk pribadi dan keluarga Indonesia. Pantau kebiasaan kecil seperti ibadah, minum air, belajar anak, olahraga ringan, dan rutinitas rumah.',
+  ogTitle: 'Rutina — Habit Keluarga Indonesia',
+  ogDescription: 'Biar kebiasaan baik nggak cuma jadi niat doang. Track rutinitas pribadi dan keluarga dalam satu tempat.',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   twitterCard: 'summary_large_image',
   ogImage: '/social-card.png',
   twitterImage: '/social-card.png',
   ogType: 'website',
-  ogUrl: 'https://habit.nuxt.dev',
-  ogSiteName: 'Habit',
-  twitterCreator: '@ZHatlen',
-  twitterSite: '@ZHatlen',
+  ogSiteName: 'Rutina',
   robots: 'index, follow',
-  keywords: 'habit, tracker, daily, habits, management, tool, minimalistic',
+  keywords: 'habit tracker indonesia, aplikasi rutinitas keluarga, tracker kebiasaan, jurnal harian, rutinitas anak, habit keluarga',
 });
 </script>
 

@@ -1,40 +1,34 @@
 {
-  "name": "habit",
-  "version": "6.1.22",
-  "description": "A minimalistic habit tracker application to track and manage your daily habits with ease.",
+  "name": "rutina",
+  "version": "0.1.0",
+  "description": "Rutina is a localized habit and daily routine tracker for Indonesian families.",
   "author": {
-    "name": "Sefa Bulak",
-    "url": "https://github.com/zackha"
+    "name": "sri budi Darmono",
+    "url": "https://github.com/sbudid"
   },
   "license": "MIT",
-  "homepage": "https://github.com/zackha/habit",
+  "homepage": "https://github.com/sbudid/habit",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zackha/habit.git"
+    "url": "https://github.com/sbudid/habit.git"
   },
   "keywords": [
-    "habit tracker",
+    "habit tracker indonesia",
+    "rutinitas keluarga",
     "daily habits",
-    "task manager",
-    "vue 3",
     "nuxt",
     "drizzle orm",
     "sqlite",
-    "confetti animation",
-    "tailwindcss",
-    "markdown support",
-    "typescript",
-    "habit tracking app",
     "nuxthub",
-    "todo"
+    "cloudflare d1",
+    "micro saas indonesia"
   ],
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "db:generate": "drizzle-kit generate",
-    "deploy": "bumpp"
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@nuxt/ui": "^2.22.3",

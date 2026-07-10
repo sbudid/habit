@@ -1,7 +1,7 @@
 {
   "name": "habit",
   "version": "6.1.22",
-  "description": "A minimalistic habit tracker application to track and manage your daily habits with ease.",
+  "description": "Aplikasi pelacak kebiasaan minimalis untuk melacak dan mengelola kebiasaan harian Anda dengan mudah.",
   "author": {
     "name": "Sefa Bulak",
     "url": "https://github.com/zackha"
@@ -13,6 +13,9 @@
     "url": "https://github.com/zackha/habit.git"
   },
   "keywords": [
+    "pelacak kebiasaan",
+    "kebiasaan harian",
+    "manajer tugas",
     "habit tracker",
     "daily habits",
     "task manager",
@@ -26,7 +29,9 @@
     "typescript",
     "habit tracking app",
     "nuxthub",
-    "todo"
+    "todo",
+    "bahasa indonesia",
+    "indonesian"
   ],
   "scripts": {
     "build": "nuxt build",
@@ -34,7 +39,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "db:generate": "drizzle-kit generate",
-    "deploy": "bumpp"
+    "deploy": "nuxthub deploy",
+    "deploy:preview": "nuxthub deploy --preview",
+    "db:migrate": "nuxthub database migrate"
   },
   "dependencies": {
     "@nuxt/ui": "^2.22.3",

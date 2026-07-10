@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { loggedIn, session } = useUserSession();
 const createHabitModal = ref(false);
+const { t } = useI18n();
 defineProps<{ user: User }>();
 const isOwnProfile = computed(() => session.value.user?.login === useRoute().params.user);
 </script>
@@ -17,14 +18,16 @@ const isOwnProfile = computed(() => session.value.user?.login === useRoute().par
     <div v-if="isOwnProfile" class="absolute right-5 top-5 flex gap-3">
       <button class="button bg-white/20 py-1.5 pl-2 pr-2.5 hover:bg-white/25" @click="createHabitModal = true">
         <UIcon name="i-heroicons-plus-16-solid" class="h-5 w-5" />
-        Create
+        {{ t('create') }}
       </button>
       <Dropdown :user="user" />
     </div>
-    <div v-else-if="!loggedIn" class="absolute right-5 top-5 flex gap-3">
+    <div v-else-if="!loggedIn" class="absolute right-5 top-5 flex gap-2">
       <a href="/api/auth/github" class="button bg-white/20 px-2 py-1.5 hover:bg-white/25">
         <UIcon name="i-simple-icons-github" class="h-5 w-5" />
-        Sign in
+      </a>
+      <a href="/api/auth/google" class="button bg-white/20 px-2 py-1.5 hover:bg-white/25">
+        <UIcon name="i-simple-icons-google" class="h-5 w-5" />
       </a>
     </div>
     <UModal

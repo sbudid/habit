@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{ isMyProfile: Boolean }>();
 const createHabitModal = ref(false);
+const { t } = useI18n();
 </script>
 
 <template>
@@ -14,19 +15,17 @@ const createHabitModal = ref(false);
       <button @click="createHabitModal = true" class="button mb-2 bg-green-400 p-2.5 text-green-950 hover:bg-green-300">
         <UIcon name="i-heroicons-plus-16-solid" class="h-6 w-6" />
       </button>
-      <div class="font-medium">No habit found</div>
-      <div class="text-xs text-neutral-400">Create a new habit to track your progress</div>
+      <div class="font-medium">{{ t('noHabits') }}</div>
+      <div class="text-xs text-neutral-400">{{ t('noHabitsDesc') }}</div>
     </div>
     <div v-else class="flex flex-col items-center justify-center gap-2 py-9">
       <div class="button mb-2 bg-green-400 p-1.5 text-green-950">
         <div class="h-8 w-8 rounded-full bg-green-900 shadow-inner shadow-black/50"></div>
       </div>
-      <div class="font-medium">No visible habits</div>
+      <div class="font-medium">{{ t('noVisible') }}</div>
     </div>
   </ContentBox>
-  <UModal
-    v-model="createHabitModal"
-    :ui="{ container: 'items-center', width: 'w-96', background: '', shadow: '', overlay: { base: 'backdrop-blur-2xl', background: 'bg-white/5 dark:bg-black/60' } }">
+  <UModal v-model="createHabitModal" :ui="{ container: 'items-center', width: 'w-96', background: '', shadow: '', overlay: { base: 'backdrop-blur-2xl', background: 'bg-white/5 dark:bg-black/60' } }">
     <HabitForm @habitAdded="createHabitModal = false" />
   </UModal>
 </template>

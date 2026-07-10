@@ -15,4 +15,19 @@ export default defineNuxtConfig({
       version: pkg.version,
     },
   },
+  // Cloudflare Workers compatibility
+  nitro: {
+    preset: 'cloudflare-pages',
+    experimental: {
+      openAPI: true,
+    },
+  },
+  // PWA manifest
+  app: {
+    head: {
+      meta: [
+        { name: 'theme-color', content: '#22c55e' },
+      ],
+    },
+  },
 });

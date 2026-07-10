@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{ user: User }>();
+const { t } = useI18n();
 </script>
 
 <template>
@@ -13,7 +14,7 @@ defineProps<{ user: User }>();
       <div class="button mb-2 bg-green-400 p-2.5 text-green-950">
         <UIcon name="i-heroicons-lock-closed-solid" class="h-6 w-6" />
       </div>
-      <div class="font-medium">@{{ user.login }}'s account is private</div>
+      <div class="font-medium">@{{ user.login }} {{ t('privateAccount') }}</div>
     </div>
   </ContentBox>
 </template>

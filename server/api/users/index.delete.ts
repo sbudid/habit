@@ -6,5 +6,5 @@ export default eventHandler(async event => {
   await useDB().delete(tables.habits).where(eq(tables.habits.userId, user.id));
   await useDB().delete(tables.users).where(eq(tables.users.id, user.id));
 
-  return { message: 'Account and all related habits have been successfully deleted.' };
+  return { message: 'Akun dan semua kebiasaan terkait telah berhasil dihapus.' };
 });

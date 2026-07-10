@@ -3,15 +3,15 @@ import { isSameDay, parseISO, differenceInDays, format, compareAsc } from 'date-
 const habits = ref<Habit[]>([
   {
     id: 1,
-    title: 'Morning Exercise',
-    description: '**Daily** 30 minutes of exercise to stay fit.',
+    title: 'Olahraga Pagi',
+    description: '**Setiap hari** 30 menit olahraga untuk tetap bugar.',
     complete_days: ['2025-01-12'],
     target_days: 40,
   },
   {
     id: 2,
-    title: 'Reading',
-    description: 'Read *at least* 20 pages every day.',
+    title: 'Membaca',
+    description: 'Baca *minimal* 20 halaman setiap hari.',
     complete_days: ['2025-01-15', '2025-01-14', '2025-01-13', '2025-01-12'],
     target_days: 40,
   },

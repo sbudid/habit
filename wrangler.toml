@@ -7,3 +7,4 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "habit-db"
 database_id = "badae66a-6212-4fe8-8d9b-81ed871b2fac"
+migrations_dir = "server/database/migrations"

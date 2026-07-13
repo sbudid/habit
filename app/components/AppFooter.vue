@@ -13,7 +13,7 @@ const currentYear = format(new Date(), 'yyyy');
       <span>· {{ currentYear }}</span>
     </div>
     <div class="text-[11px] text-white/35">
-      MVP habit keluarga Indonesia — siap dipoles jadi microSaaS.
+      Pelacak kebiasaan keluarga Indonesia.
     </div>
   </div>
 </template>

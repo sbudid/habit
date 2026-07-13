@@ -2,6 +2,7 @@
 const { loggedIn, session } = useUserSession();
 
 const createHabitModal = ref(false);
+useModalBackButton(createHabitModal);
 
 defineProps<{ user: User }>();
 const isOwnProfile = computed(() => session.value.user?.login === useRoute().params.user);
@@ -38,8 +39,20 @@ const isOwnProfile = computed(() => session.value.user?.login === useRoute().par
 
     <UModal
       v-model="createHabitModal"
-      :ui="{ container: 'items-center', width: 'w-96', background: '', shadow: '', overlay: { base: 'backdrop-blur-2xl', background: 'bg-white/5 dark:bg-black/60' } }">
-      <HabitForm @habitAdded="createHabitModal = false" />
+      :ui="{ container: 'items-end p-0 sm:items-center sm:p-4', width: 'w-full sm:max-w-md', background: '', shadow: '', overlay: { base: 'backdrop-blur-2xl', background: 'bg-white/5 dark:bg-black/60' } }">
+      <div
+    class="relative max-h-dvh w-full overflow-y-auto rounded-t-3xl bg-neutral-950/95 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-3xl"
+    style="padding-bottom: env(safe-area-inset-bottom)">
+    <button
+      type="button"
+      aria-label="Tutup form tambah rutinitas"
+      class="button absolute right-3 top-3 z-20 h-9 w-9 bg-black/50 text-white hover:bg-black/70"
+      @click="createHabitModal = false">
+      <UIcon name="i-heroicons-x-mark-20-solid" class="h-5 w-5" />
+    </button>
+
+    <HabitForm @habitAdded="createHabitModal = false" />
+  </div>
     </UModal>
   </div>
 </template>

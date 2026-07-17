@@ -20,11 +20,7 @@ const { data: myHabits } = useQuery({
 const emptyHabits = computed(() => habits.value?.length === 0);
 const emptyMyHabits = computed(() => myHabits.value?.length === 0);
 
-const pageTitle = computed(() =>
-  user.value?.login && user.value?.name
-    ? `${user.value.name} (@${user.value.login}) · Rutina`
-    : 'Halaman tidak ditemukan · Rutina',
-);
+const pageTitle = computed(() => (user.value?.login && user.value?.name ? `${user.value.name} (@${user.value.login}) · Rutina` : 'Halaman tidak ditemukan · Rutina'));
 
 useSeoMeta({
   title: pageTitle,
@@ -43,7 +39,7 @@ useSeoMeta({
       </template>
 
       <template v-else>
-        <div class="scrollable-card max-h-[calc(100vh-18.875rem)] overflow-y-auto">
+        <div class="scrollable-card max-h-[calc(100dvh-5.75rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto px-1 pb-2">
           <HabitCard v-for="habit in isMyProfile ? myHabits : habits" :key="habit.id" :habit="habit" :isMyProfile="isMyProfile" />
         </div>
 

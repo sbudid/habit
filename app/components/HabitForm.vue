@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { z } from 'zod';
 import type { FormSubmitEvent } from '#ui/types';
+import { DEFAULT_HABIT_COLOR, normalizeHabitColor } from '../utils/habitUi.mjs';
 
 const schema = z.object({
   title: z.string().min(1, 'Nama rutinitas wajib diisi').trim(),
   description: z.string().min(1, 'Catatan singkat wajib diisi').trim(),
   habitView: z.boolean(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Warna tidak valid'),
 });
 
 type Schema = z.output<typeof schema>;
@@ -14,6 +16,7 @@ const formState = reactive<Schema>({
   title: '',
   description: '',
   habitView: false,
+  color: DEFAULT_HABIT_COLOR,
 });
 
 const quickTemplates = [
@@ -38,23 +41,23 @@ const quickTemplates = [
 const queryCache = useQueryCache();
 
 const emit = defineEmits<{
-  (e: 'habitAdded'): void;
+  (event: 'habitAdded'): void;
 }>();
 
 const { mutate: addHabit } = useMutation({
-  mutation: (data: Schema) => {
-    return $fetch('/api/habits', {
+  mutation: (data: Schema) =>
+    $fetch('/api/habits', {
       method: 'POST',
-      body: data,
-    }) as Promise<Habit>;
-  },
+      body: { ...data, color: normalizeHabitColor(data.color) },
+    }) as Promise<Habit>,
+
   async onSuccess() {
     await queryCache.invalidateQueries({ active: true });
-    emit('habitAdded');
-  },
-  onSettled() {
     formState.title = '';
     formState.description = '';
+    formState.habitView = false;
+    formState.color = DEFAULT_HABIT_COLOR;
+    emit('habitAdded');
   },
 });
 
@@ -63,24 +66,20 @@ function useTemplate(template: { title: string; description: string }) {
   formState.description = template.description;
 }
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+function onSubmit(event: FormSubmitEvent<Schema>) {
   addHabit(event.data);
 }
 
-const habitVisibilityMessage = computed(() => {
-  return formState.habitView
-    ? 'Rutinitas ini <strong>publik</strong> kalau profil kamu juga publik.'
-    : 'Rutinitas ini <strong>private</strong> dan hanya kamu yang bisa lihat.';
-});
+const habitVisibilityMessage = computed(() =>
+  formState.habitView ? 'Rutinitas ini <strong>publik</strong> kalau profil kamu juga publik.' : 'Rutinitas ini <strong>private</strong> dan hanya kamu yang bisa lihat.',
+);
 </script>
 
 <template>
-  <div class="p-8">
-    <div class="mb-5 flex flex-col gap-1">
+  <div class="p-5 sm:p-8">
+    <div class="mb-4 flex flex-col gap-1 pr-10">
       <div class="text-xl font-semibold">Tambah rutinitas</div>
-      <p class="text-xs leading-5 text-white/45">
-        Pilih template cepat atau tulis sendiri. Jangan kebanyakan dulu, mulai dari 1-3 habit yang beneran mau dijalani.
-      </p>
+      <p class="text-xs leading-5 text-white/45">Pilih template cepat atau tulis sendiri. Semua rutinitas tetap tampil ringkas di dashboard.</p>
     </div>
 
     <div class="mb-4 grid grid-cols-2 gap-2">
@@ -88,13 +87,13 @@ const habitVisibilityMessage = computed(() => {
         v-for="template in quickTemplates"
         :key="template.title"
         type="button"
-        class="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-left text-xs leading-4 text-white/70 transition hover:bg-white/15"
+        class="min-h-11 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-left text-xs leading-4 text-white/70 transition hover:bg-white/15 active:scale-[.98]"
         @click="useTemplate(template)">
         {{ template.title }}
       </button>
     </div>
 
-    <UForm :schema="schema" :state="formState" class="flex flex-col gap-4" @submit="onSubmit">
+    <UForm :schema="schema" :state="formState" class="flex flex-col gap-3" @submit="onSubmit">
       <UFormGroup name="title">
         <div class="input-container">
           <input v-model="formState.title" placeholder="Nama rutinitas..." />
@@ -103,16 +102,16 @@ const habitVisibilityMessage = computed(() => {
 
       <UFormGroup name="description">
         <div class="input-container">
-          <textarea
-            v-model="formState.description"
-            class="scroll-bar"
-            rows="5"
-            placeholder="Catatan singkat. Contoh: centang kalau berhasil jalan kaki 15 menit hari ini..." />
+          <textarea v-model="formState.description" class="scroll-bar" rows="4" placeholder="Catatan singkat. Contoh: centang kalau berhasil jalan kaki 15 menit hari ini..." />
         </div>
       </UFormGroup>
 
+      <UFormGroup name="color">
+        <HabitColorPicker v-model="formState.color" />
+      </UFormGroup>
+
       <UFormGroup name="habitView">
-        <div class="toggle flex items-center justify-between gap-6">
+        <div class="toggle flex min-h-11 items-center justify-between gap-6">
           <div class="flex flex-col">
             <div class="text-sm font-semibold text-white">Tampilkan ke publik</div>
             <div class="text-xs text-white/60" v-html="habitVisibilityMessage"></div>
@@ -121,7 +120,10 @@ const habitVisibilityMessage = computed(() => {
         </div>
       </UFormGroup>
 
-      <button type="submit" class="button bg-lime-300 px-2.5 py-3 font-semibold text-lime-950 outline-none hover:bg-lime-200">
+      <button
+        type="submit"
+        class="button min-h-11 px-2.5 py-3 font-semibold text-white outline-none transition hover:brightness-110"
+        :style="{ backgroundColor: normalizeHabitColor(formState.color) }">
         Simpan rutinitas
       </button>
     </UForm>
@@ -137,10 +139,10 @@ input,
 textarea,
 .toggle {
   box-shadow:
-    inset 0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.1),
-    inset -0.5px -0.5px 1px 0px rgba(0, 0, 0, 0.1),
-    rgba(0, 0, 0, 0.2) 0px 3px 10px -5px;
-  @apply w-full rounded-2xl bg-white/10 p-4 outline-none transition-all placeholder:text-white/35;
+    inset 0.5px 0.5px 1px 0 rgba(255, 255, 255, 0.1),
+    inset -0.5px -0.5px 1px 0 rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.2) 0 3px 10px -5px;
+  @apply w-full rounded-2xl bg-white/10 p-3 outline-none transition-all placeholder:text-white/35;
 
   &:focus {
     @apply bg-white/15;

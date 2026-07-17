@@ -13,9 +13,9 @@
 }
 
 .fzypcq {
-  @apply z-10 mx-auto flex w-full max-w-sm flex-col items-center justify-center gap-4 p-5;
-  padding-top: max(1.25rem, env(safe-area-inset-top));
-  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  @apply z-10 mx-auto flex w-full max-w-sm flex-col items-center justify-center gap-2 px-3 py-3;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
 .iPbnzK {

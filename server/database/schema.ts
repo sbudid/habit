@@ -5,6 +5,7 @@ export const habits = sqliteTable('habits', {
   userId: integer('user_id').notNull(),
   title: text('title').notNull(),
   description: text('description'),
+  color: text('color').notNull().default('#84cc16'),
   completeDays: text('complete_days', { mode: 'json' }).$type<string[]>().notNull().default([]),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   habitView: integer('habit_view', { mode: 'boolean' }).notNull().default(false),

@@ -1,10 +1,14 @@
 import { useValidatedBody, z } from 'h3-zod';
 
 export default eventHandler(async event => {
-  const { title, description, habitView } = await useValidatedBody(event, {
+  const { title, description, habitView, color } = await useValidatedBody(event, {
     title: z.string().min(1, 'Title is required').trim(),
     description: z.string().min(1, 'Description is required').trim(),
     habitView: z.boolean(),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .optional(),
   });
 
   const { user } = await requireUserSession(event);
@@ -15,6 +19,7 @@ export default eventHandler(async event => {
       userId: user.id,
       title,
       description,
+      color: color?.toLowerCase() ?? '#84cc16',
       createdAt: new Date(),
       habitView,
     })

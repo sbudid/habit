@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ user: User }>();
+defineProps<{ user: DatabaseUser }>();
 
 const { clear } = useUserSession();
 

@@ -25,7 +25,7 @@ function slugify(value: string) {
 }
 
 function buildLogin(name: string, email: string) {
-  const base = slugify(name) || slugify(email.split('@')[0]) || 'rutina-user';
+  const base = slugify(name) || slugify(email.split('@')[0] || '') || 'rutina-user';
   const suffix = hashStringToPositiveInt(email).toString(36).slice(0, 5);
 
   return `${base}-${suffix}`;

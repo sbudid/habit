@@ -1,6 +1,14 @@
 import { isSameDay, parseISO, differenceInDays, format, compareAsc } from 'date-fns';
 
-const habits = ref<Habit[]>([
+interface DemoHabit {
+  id: number;
+  title: string;
+  description: string;
+  complete_days: string[];
+  target_days: number;
+}
+
+const habits = ref<DemoHabit[]>([
   {
     id: 1,
     title: 'Morning Exercise',
@@ -19,13 +27,18 @@ const habits = ref<Habit[]>([
 
 const today = format(new Date(), 'yyyy-MM-dd');
 
-const resetIfStreakBroken = (habit: Habit): void => {
+const resetIfStreakBroken = (habit: DemoHabit): void => {
   if (habit.complete_days.length === 0) return;
 
   const sortedDays = habit.complete_days.slice().sort((a, b) => compareAsc(parseISO(a), parseISO(b)));
-  const hasGap = sortedDays.some((day, index) => index > 0 && differenceInDays(parseISO(day), parseISO(sortedDays[index - 1])) > 1);
+  const hasGap = sortedDays.some((day, index) => {
+    const previousDay = sortedDays[index - 1];
+    return previousDay ? differenceInDays(parseISO(day), parseISO(previousDay)) > 1 : false;
+  });
 
-  const lastCompletedDate = parseISO(sortedDays[sortedDays.length - 1]);
+  const lastCompletedDay = sortedDays.at(-1);
+  if (!lastCompletedDay) return;
+  const lastCompletedDate = parseISO(lastCompletedDay);
   const diffToToday = differenceInDays(parseISO(today), lastCompletedDate);
 
   if (hasGap || diffToToday > 1) habit.complete_days = [];
@@ -49,7 +62,7 @@ const deleteHabit = (id: number): void => {
   habits.value = habits.value.filter(habit => habit.id !== id);
 };
 
-const toggleTodayCompletion = (habit: Habit): void => {
+const toggleTodayCompletion = (habit: DemoHabit): void => {
   const isCompletedToday = habit.complete_days.some(day => isSameDay(parseISO(day), parseISO(today)));
 
   if (isCompletedToday) {
@@ -65,9 +78,9 @@ const toggleTodayCompletion = (habit: Habit): void => {
   }
 };
 
-const isTodayCompleted = (habit: Habit): boolean => habit.complete_days.some(day => isSameDay(parseISO(day), parseISO(today)));
+const isTodayCompleted = (habit: DemoHabit): boolean => habit.complete_days.some(day => isSameDay(parseISO(day), parseISO(today)));
 
-const getCompletionRate = (habit: Habit): number => Math.round((habit.complete_days.length / habit.target_days) * 100);
+const getCompletionRate = (habit: DemoHabit): number => Math.round((habit.complete_days.length / habit.target_days) * 100);
 
 checkAllHabitsForStreak();
 

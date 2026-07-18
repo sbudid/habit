@@ -3,8 +3,8 @@ const { loggedIn, session } = useUserSession();
 const createHabitModal = ref(false);
 useModalBackButton(createHabitModal);
 
-defineProps<{ user: User }>();
-const isOwnProfile = computed(() => session.value.user?.login === useRoute().params.user);
+defineProps<{ user: DatabaseUser }>();
+const isOwnProfile = computed(() => session.value?.user?.login === useRoute().params.user);
 </script>
 
 <template>

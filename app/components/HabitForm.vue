@@ -1,14 +1,29 @@
 <script setup lang="ts">
 import { z } from 'zod';
+import { format } from 'date-fns';
 import type { FormSubmitEvent } from '#ui/types';
 import { DEFAULT_HABIT_COLOR, normalizeHabitColor } from '../utils/habitUi.mjs';
 
-const schema = z.object({
-  title: z.string().min(1, 'Nama rutinitas wajib diisi').trim(),
-  description: z.string().min(1, 'Catatan singkat wajib diisi').trim(),
-  habitView: z.boolean(),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Warna tidak valid'),
-});
+const schema = z
+  .object({
+    title: z.string().min(1, 'Nama rutinitas wajib diisi').trim(),
+    description: z.string().min(1, 'Catatan singkat wajib diisi').trim(),
+    habitView: z.boolean(),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Warna tidak valid'),
+    scheduleType: z.enum(['daily', 'specific_days', 'times_per_week', 'interval_days']),
+    scheduleDays: z.array(z.number().int().min(1).max(7)),
+    weeklyTarget: z.number().int().min(1).max(7),
+    intervalDays: z.number().int().min(2).max(365),
+    scheduleStartDate: z.string().nullable(),
+  })
+  .superRefine((value, context) => {
+    if (value.scheduleType === 'specific_days' && value.scheduleDays.length === 0) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ['scheduleDays'], message: 'Pilih minimal satu hari' });
+    }
+    if (value.scheduleType === 'interval_days' && !value.scheduleStartDate) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ['scheduleStartDate'], message: 'Tanggal mulai wajib diisi' });
+    }
+  });
 
 type Schema = z.output<typeof schema>;
 
@@ -17,6 +32,15 @@ const formState = reactive<Schema>({
   description: '',
   habitView: false,
   color: DEFAULT_HABIT_COLOR,
+  scheduleType: 'daily',
+  scheduleDays: [1, 2, 3, 4, 5],
+  weeklyTarget: 3,
+  intervalDays: 2,
+  scheduleStartDate: format(new Date(), 'yyyy-MM-dd'),
+});
+const scheduleState = computed({
+  get: () => formState,
+  set: value => Object.assign(formState, value),
 });
 
 const quickTemplates = [
@@ -57,6 +81,11 @@ const { mutate: addHabit } = useMutation({
     formState.description = '';
     formState.habitView = false;
     formState.color = DEFAULT_HABIT_COLOR;
+    formState.scheduleType = 'daily';
+    formState.scheduleDays = [1, 2, 3, 4, 5];
+    formState.weeklyTarget = 3;
+    formState.intervalDays = 2;
+    formState.scheduleStartDate = format(new Date(), 'yyyy-MM-dd');
     emit('habitAdded');
   },
 });
@@ -108,6 +137,10 @@ const habitVisibilityMessage = computed(() =>
 
       <UFormGroup name="color">
         <HabitColorPicker v-model="formState.color" />
+      </UFormGroup>
+
+      <UFormGroup name="scheduleDays">
+        <HabitScheduleFields v-model="scheduleState" />
       </UFormGroup>
 
       <UFormGroup name="habitView">

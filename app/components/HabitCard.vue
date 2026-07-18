@@ -2,13 +2,21 @@
 import { marked } from 'marked';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { DEFAULT_HABIT_COLOR, normalizeHabitColor } from '../utils/habitUi.mjs';
+import { getHabitScheduleState } from '../utils/habitSchedule.mjs';
 
-const props = defineProps<{ habit: Habit; isMyProfile: boolean }>();
+const props = withDefaults(defineProps<{ habit: Habit; isMyProfile: boolean; canMoveUp?: boolean; canMoveDown?: boolean; timeZone?: string; now?: Date }>(), { timeZone: 'UTC', now: () => new Date() });
+const emit = defineEmits<{
+  (event: 'moveUp' | 'moveDown', id: number): void;
+  (event: 'dragStart', id: number): void;
+  (event: 'dragMove', point: { x: number; y: number }): void;
+  (event: 'dragEnd'): void;
+}>();
 const queryCache = useQueryCache();
 
 const renderMarkdown = (text: string) => marked(text);
 const getCompletionRate = (habit: Habit) => Math.min(100, Math.round((habit.completeDays.length / 40) * 100));
 const habitColor = computed(() => normalizeHabitColor(props.habit.color));
+const scheduleState = computed(() => getHabitScheduleState(props.habit, { timeZone: props.timeZone, now: props.now }));
 
 const openHabitModal = ref(false);
 const confirmDeleteHabit = ref(false);
@@ -35,11 +43,30 @@ const { mutate: deleteHabit } = useMutation({
 });
 
 const editingHabit = ref<number | null>(null);
-const edit = ref<{ title: string; description: string; habitView: boolean; color: string }>({
+const edit = ref<{
+  title: string;
+  description: string;
+  habitView: boolean;
+  color: string;
+  scheduleType: Habit['scheduleType'];
+  scheduleDays: number[];
+  weeklyTarget: number;
+  intervalDays: number;
+  scheduleStartDate: string | null;
+}>({
   title: '',
   description: '',
   habitView: false,
   color: DEFAULT_HABIT_COLOR,
+  scheduleType: 'daily',
+  scheduleDays: [],
+  weeklyTarget: 3,
+  intervalDays: 2,
+  scheduleStartDate: null,
+});
+const editSchedule = computed({
+  get: () => edit.value,
+  set: value => Object.assign(edit.value, value),
 });
 
 const editHabit = (habit: Habit) => {
@@ -49,6 +76,11 @@ const editHabit = (habit: Habit) => {
     description: habit.description || '',
     habitView: habit.habitView,
     color: normalizeHabitColor(habit.color),
+    scheduleType: habit.scheduleType || 'daily',
+    scheduleDays: [...(habit.scheduleDays || [])],
+    weeklyTarget: habit.weeklyTarget || 3,
+    intervalDays: habit.intervalDays || 2,
+    scheduleStartDate: habit.scheduleStartDate,
   };
 };
 
@@ -61,6 +93,11 @@ const { mutate: saveHabit } = useMutation({
         description: edit.value.description,
         habitView: edit.value.habitView,
         color: normalizeHabitColor(edit.value.color),
+        scheduleType: edit.value.scheduleType,
+        scheduleDays: edit.value.scheduleDays,
+        weeklyTarget: edit.value.weeklyTarget,
+        intervalDays: edit.value.intervalDays,
+        scheduleStartDate: edit.value.scheduleStartDate,
       },
     }),
   async onSuccess() {
@@ -92,10 +129,62 @@ const { mutate: toggleTodayCompletion } = useMutation({
     if (isTodayCompleted(updatedHabit)) startConfettiAnimation();
   },
 });
+
+let longPressTimer: ReturnType<typeof setTimeout> | undefined;
+let dragActive = false;
+let pointerStart = { x: 0, y: 0 };
+
+function clearLongPress() {
+  if (longPressTimer) clearTimeout(longPressTimer);
+  longPressTimer = undefined;
+}
+
+function onHandlePointerDown(event: PointerEvent) {
+  if (!props.isMyProfile || event.button > 0) return;
+  pointerStart = { x: event.clientX, y: event.clientY };
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  clearLongPress();
+  longPressTimer = setTimeout(() => {
+    dragActive = true;
+    navigator.vibrate?.(20);
+    emit('dragStart', props.habit.id);
+  }, event.pointerType === 'mouse' ? 0 : 250);
+}
+
+function onHandlePointerMove(event: PointerEvent) {
+  if (!dragActive) {
+    if (Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 10) clearLongPress();
+    return;
+  }
+  event.preventDefault();
+  emit('dragMove', { x: event.clientX, y: event.clientY });
+}
+
+function finishHandleDrag() {
+  clearLongPress();
+  if (dragActive) emit('dragEnd');
+  dragActive = false;
+}
 </script>
 
 <template>
-  <ContentBox class="mx-2 mb-1 flex min-h-11 items-center gap-2 rounded-xl bg-neutral-400/5 px-2 py-0.5 transition hover:bg-white/5">
+  <ContentBox
+    :data-habit-id="habit.id"
+    class="mx-2 mb-1 flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-400/5 px-1.5 py-0.5 transition hover:bg-white/5"
+    :class="{ 'opacity-45 grayscale-[.2]': !scheduleState.isActiveToday && !isTodayCompleted(habit) }">
+    <button
+      v-if="isMyProfile"
+      type="button"
+      class="flex h-11 w-7 shrink-0 touch-none items-center justify-center rounded-lg text-white/35 transition hover:bg-white/10 hover:text-white/70 active:bg-white/15"
+      :aria-label="`Tahan untuk menggeser ${habit.title}`"
+      @contextmenu.prevent
+      @pointerdown="onHandlePointerDown"
+      @pointermove="onHandlePointerMove"
+      @pointerup="finishHandleDrag"
+      @pointercancel="finishHandleDrag">
+      <UIcon name="i-heroicons-bars-3-20-solid" class="h-5 w-5" />
+    </button>
+
     <button
       type="button"
       class="flex min-w-0 flex-1 items-center gap-2 self-stretch text-left transition active:scale-[.985]"
@@ -103,8 +192,9 @@ const { mutate: toggleTodayCompletion } = useMutation({
       @click="openHabitModal = true">
       <UIcon name="i-heroicons-bolt-20-solid" class="h-4 w-4 shrink-0 drop-shadow" :style="{ color: habitColor }" />
 
-      <span class="line-clamp-2 min-w-0 break-words text-xs font-semibold leading-4 text-white">
-        {{ habit.title }}
+      <span class="min-w-0">
+        <span class="line-clamp-1 block break-words text-xs font-semibold leading-4 text-white">{{ habit.title }}</span>
+        <span v-if="habit.scheduleType !== 'daily'" class="line-clamp-1 block text-[9px] leading-3 text-white/45">{{ scheduleState.label }}</span>
       </span>
     </button>
 
@@ -114,8 +204,9 @@ const { mutate: toggleTodayCompletion } = useMutation({
       v-if="isMyProfile"
       type="button"
       class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition active:scale-90"
-      :class="isTodayCompleted(habit) ? 'bg-white/10 text-white/70' : 'text-white shadow-sm'"
-      :style="!isTodayCompleted(habit) ? { backgroundColor: habitColor } : undefined"
+      :disabled="!scheduleState.isActiveToday && !isTodayCompleted(habit)"
+      :class="isTodayCompleted(habit) ? 'bg-white/10 text-white/70' : scheduleState.isActiveToday ? 'text-white shadow-sm' : 'cursor-not-allowed bg-white/5 text-white/25'"
+      :style="!isTodayCompleted(habit) && scheduleState.isActiveToday ? { backgroundColor: habitColor } : undefined"
       :aria-label="isTodayCompleted(habit) ? `Batalkan ${habit.title} hari ini` : `Tandai ${habit.title} selesai hari ini`"
       @click.stop="toggleTodayCompletion(habit)">
       <UIcon :name="isTodayCompleted(habit) ? 'i-heroicons-arrow-uturn-left-16-solid' : 'i-heroicons-check-16-solid'" class="h-5 w-5" />
@@ -171,8 +262,9 @@ const { mutate: toggleTodayCompletion } = useMutation({
               <button
                 type="button"
                 class="button min-h-10 px-3 py-1.5 font-semibold text-white outline-none transition hover:brightness-110"
-                :class="isTodayCompleted(habit) ? 'bg-white/10 hover:bg-white/25' : ''"
-                :style="!isTodayCompleted(habit) ? { backgroundColor: habitColor } : undefined"
+                :disabled="!scheduleState.isActiveToday && !isTodayCompleted(habit)"
+                :class="isTodayCompleted(habit) ? 'bg-white/10 hover:bg-white/25' : scheduleState.isActiveToday ? '' : 'cursor-not-allowed bg-white/5 text-white/25'"
+                :style="!isTodayCompleted(habit) && scheduleState.isActiveToday ? { backgroundColor: habitColor } : undefined"
                 @click="toggleTodayCompletion(habit)">
                 <UIcon v-if="!isTodayCompleted(habit)" name="i-heroicons-check-16-solid" class="h-5 w-5" />
                 {{ isTodayCompleted(habit) ? 'Batal' : 'Selesai' }}
@@ -184,6 +276,29 @@ const { mutate: toggleTodayCompletion } = useMutation({
                 </button>
                 <template #panel="{ close }">
                   <div class="dropdown">
+                    <button
+                      type="button"
+                      :disabled="!canMoveUp"
+                      class="m-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-lg p-2 transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-35"
+                      @click="
+                        close();
+                        emit('moveUp', habit.id);
+                      ">
+                      <UIcon name="i-heroicons-arrow-up-20-solid" class="h-5 w-5" />
+                      <span>Pindah ke atas</span>
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="!canMoveDown"
+                      class="m-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-lg p-2 transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-35"
+                      @click="
+                        close();
+                        emit('moveDown', habit.id);
+                      ">
+                      <UIcon name="i-heroicons-arrow-down-20-solid" class="h-5 w-5" />
+                      <span>Pindah ke bawah</span>
+                    </button>
+                    <div class="border-b border-white/5"></div>
                     <button
                       type="button"
                       class="m-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-lg p-2 transition hover:bg-black/30"
@@ -211,12 +326,18 @@ const { mutate: toggleTodayCompletion } = useMutation({
             </div>
           </div>
 
-          <HabitColorPicker v-if="editingHabit === habit.id" v-model="edit.color" compact />
+          <template v-if="editingHabit === habit.id">
+            <HabitColorPicker v-model="edit.color" compact />
+            <HabitScheduleFields v-model="editSchedule" />
+          </template>
 
           <ContentBox class="flex flex-col gap-2 bg-white/10 p-3 backdrop-blur-2xl dark:bg-neutral-200/5">
             <div class="flex items-center gap-2 text-xs font-medium text-white/50">
               <p>{{ format(habit.createdAt, 'MMM d, yyyy') }}</p>
               <UIcon v-if="isMyProfile" :name="habit.habitView ? 'i-heroicons-eye-20-solid' : 'i-heroicons-eye-slash-20-solid'" class="-mt-0.5 h-4 w-4" />
+            </div>
+            <div class="rounded-xl bg-white/5 px-2.5 py-2 text-xs text-white/55">
+              {{ scheduleState.label }}
             </div>
             <UTextarea v-if="editingHabit === habit.id" v-model="edit.description" autoresize />
             <div v-else class="prose prose-sm prose-invert max-h-52 overflow-y-auto" v-html="renderMarkdown(habit.description || '')"></div>

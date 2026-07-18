@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod';
 
-const props = defineProps<{ user: User }>();
+const props = defineProps<{ user: DatabaseUser }>();
 const emit = defineEmits<{ (e: 'profileUpdated'): void }>();
 
 const schema = z.object({ userView: z.boolean() });
@@ -18,7 +18,7 @@ const { mutate: editProfile } = useMutation({
     $fetch('/api/users', {
       method: 'PATCH',
       body: data,
-    }) as Promise<User>,
+    }) as Promise<DatabaseUser>,
 
   async onSuccess() {
     await queryCache.invalidateQueries({ key: ['user'] });

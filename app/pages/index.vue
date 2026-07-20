@@ -60,16 +60,6 @@ watchEffect(async () => {
         </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2">
-        <div class="rounded-2xl border border-white/10 bg-white/10 p-3">
-          <div class="text-2xl font-semibold">7</div>
-          <div class="text-xs text-white/50">hari buat mulai konsisten</div>
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-white/10 p-3">
-          <div class="text-2xl font-semibold">3</div>
-          <div class="text-xs text-white/50">habit gratis</div>
-        </div>
-      </div>
 
       <div class="flex flex-wrap gap-2">
         <span v-for="idea in habitIdeas" :key="idea" class="rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/70">

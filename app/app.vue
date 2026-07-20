@@ -25,9 +25,12 @@ useSeoMeta({
 
 const { init } = useNotifications();
 const showNotifSettings = ref(false);
+const loggedIn = ref(false);
 
 onMounted(() => {
   init();
+  // Check if user has a session cookie
+  loggedIn.value = document.cookie.includes('nuxt-session') || document.cookie.includes('sid');
 });
 </script>
 
@@ -36,8 +39,9 @@ onMounted(() => {
     <NuxtPage />
   </NuxtLayout>
 
-  <!-- Floating notification settings button -->
+  <!-- Floating notification bell — only when logged in -->
   <button
+    v-if="loggedIn"
     class="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full bg-lime-400 hover:bg-lime-300 text-lime-950 shadow-lg shadow-lime-500/30 flex items-center justify-center transition-all active:scale-90 animate-bounce-slow"
     @click="showNotifSettings = true"
   >

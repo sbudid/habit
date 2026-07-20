@@ -24,13 +24,11 @@ useSeoMeta({
 });
 
 const { init } = useNotifications();
+const { loggedIn } = useUserSession();
 const showNotifSettings = ref(false);
-const loggedIn = ref(false);
 
 onMounted(() => {
   init();
-  // Check if user has a session cookie
-  loggedIn.value = document.cookie.includes('nuxt-session') || document.cookie.includes('sid');
 });
 </script>
 

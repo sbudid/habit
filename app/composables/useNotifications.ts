@@ -77,16 +77,21 @@ export function useNotifications() {
     }
   };
 
-  const sendNotification = (title: string, body: string) => {
+  const sendNotification = async (title: string, body: string) => {
     if (permission.value !== 'granted') return;
     try {
-      new Notification(title, {
-        body,
-        icon: '/icon.png',
-        badge: '/icon.png',
-        tag: 'rutina-reminder',
-        requireInteraction: false,
-      });
+      // PWA standalone mode requires ServiceWorkerRegistration.showNotification()
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (reg) {
+        await reg.showNotification(title, {
+          body,
+          icon: '/icon.png',
+          badge: '/icon.png',
+          tag: 'rutina-reminder',
+        });
+      } else {
+        new Notification(title, { body, icon: '/icon.png', tag: 'rutina-reminder' });
+      }
     } catch (err: any) {
       lastError.value = `Gagal kirim notifikasi: ${err?.message}`;
     }
@@ -226,11 +231,20 @@ export function useNotifications() {
 
     // Step 3: Send test notification
     try {
-      new Notification(' Rutina — Test Notifikasi', {
-        body: 'Berhasil! Kamu akan dapat reminder pagi, siang, dan rekap malam.',
-        icon: '/icon.png',
-        tag: 'rutina-test',
-      });
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (reg) {
+        await reg.showNotification(' Rutina — Test Notifikasi', {
+          body: 'Berhasil! Kamu akan dapat reminder pagi, siang, dan rekap malam.',
+          icon: '/icon.png',
+          tag: 'rutina-test',
+        });
+      } else {
+        new Notification(' Rutina — Test Notifikasi', {
+          body: 'Berhasil! Kamu akan dapat reminder pagi, siang, dan rekap malam.',
+          icon: '/icon.png',
+          tag: 'rutina-test',
+        });
+      }
     } catch (err: any) {
       lastError.value = `Gagal kirim: ${err?.message}`;
       alert(`Gagal kirim notifikasi: ${err?.message}`);

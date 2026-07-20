@@ -50,4 +50,7 @@ onMounted(() => {
   <UModal v-model="showNotifSettings">
     <NotificationSettings />
   </UModal>
+
+  <!-- PWA update prompt -->
+  <PwaReloadPrompt />
 </template>

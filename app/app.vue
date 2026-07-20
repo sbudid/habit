@@ -22,10 +22,32 @@ useSeoMeta({
   robots: 'index, follow',
   keywords: 'habit tracker indonesia, aplikasi rutinitas keluarga, tracker kebiasaan, jurnal harian, rutinitas anak, habit keluarga',
 });
+
+const { init } = useNotifications();
+const showNotifSettings = ref(false);
+
+onMounted(() => {
+  init();
+});
 </script>
 
 <template>
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+
+  <!-- Floating notification settings button -->
+  <UButton
+    icon="i-heroicons-bell"
+    color="gray"
+    variant="ghost"
+    size="sm"
+    class="fixed bottom-4 right-4 z-50 shadow-lg bg-white dark:bg-gray-800 rounded-full"
+    @click="showNotifSettings = true"
+  />
+
+  <!-- Notification settings modal -->
+  <UModal v-model="showNotifSettings">
+    <NotificationSettings />
+  </UModal>
 </template>

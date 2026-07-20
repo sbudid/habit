@@ -185,7 +185,11 @@ export function useNotifications() {
     }, 30_000);
   };
 
-  const testNotification = () => {
+  const testNotification = async () => {
+    if (permission.value !== 'granted') {
+      const granted = await requestPermission();
+      if (!granted) return;
+    }
     sendNotification(
       ' Rutina — Test Notifikasi',
       'Notifikasi berhasil! Kamu akan dapat reminder pagi, siang, dan rekap malam.',

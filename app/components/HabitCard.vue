@@ -4,9 +4,10 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import { DEFAULT_HABIT_COLOR, normalizeHabitColor } from '../utils/habitUi.mjs';
 import { getHabitScheduleState } from '../utils/habitSchedule.mjs';
 
-const props = withDefaults(defineProps<{ habit: Habit; isMyProfile: boolean; canMoveUp?: boolean; canMoveDown?: boolean; timeZone?: string; now?: Date }>(), { timeZone: 'UTC', now: () => new Date() });
+const props = withDefaults(defineProps<{ habit: Habit; isMyProfile: boolean; canMoveUp?: boolean; canMoveDown?: boolean; canMoveToTop?: boolean; canMoveToBottom?: boolean; timeZone?: string; now?: Date }>(), { timeZone: 'UTC', now: () => new Date() });
 const emit = defineEmits<{
   (event: 'moveUp' | 'moveDown', id: number): void;
+  (event: 'moveToTop' | 'moveToBottom', id: number): void;
   (event: 'dragStart', id: number): void;
   (event: 'dragMove', point: { x: number; y: number }): void;
   (event: 'dragEnd'): void;
@@ -297,6 +298,29 @@ function finishHandleDrag() {
                       ">
                       <UIcon name="i-heroicons-arrow-down-20-solid" class="h-5 w-5" />
                       <span>Pindah ke bawah</span>
+                    </button>
+                    <div class="border-b border-white/5"></div>
+                    <button
+                      type="button"
+                      :disabled="!canMoveToTop"
+                      class="m-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-lg p-2 transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-35"
+                      @click="
+                        close();
+                        emit('moveToTop', habit.id);
+                      ">
+                      <UIcon name="i-heroicons-chevron-double-up-20-solid" class="h-5 w-5" />
+                      <span>Pindah ke paling atas</span>
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="!canMoveToBottom"
+                      class="m-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-lg p-2 transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-35"
+                      @click="
+                        close();
+                        emit('moveToBottom', habit.id);
+                      ">
+                      <UIcon name="i-heroicons-chevron-double-down-20-solid" class="h-5 w-5" />
+                      <span>Pindah ke paling bawah</span>
                     </button>
                     <div class="border-b border-white/5"></div>
                     <button

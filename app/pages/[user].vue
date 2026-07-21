@@ -90,6 +90,28 @@ function moveHabit(id: number, direction: -1 | 1) {
   if (displayedHabits.value.some((habit, index) => habit.id !== previous[index]?.id)) void persistOrder(previous);
 }
 
+function moveHabitToTop(id: number) {
+  const previous = [...displayedHabits.value];
+  const ids = displayedHabits.value.map(h => h.id);
+  const index = ids.indexOf(id);
+  if (index <= 0) return;
+  ids.splice(index, 1);
+  ids.unshift(id);
+  applyIds(ids);
+  void persistOrder(previous);
+}
+
+function moveHabitToBottom(id: number) {
+  const previous = [...displayedHabits.value];
+  const ids = displayedHabits.value.map(h => h.id);
+  const index = ids.indexOf(id);
+  if (index === -1 || index === ids.length - 1) return;
+  ids.splice(index, 1);
+  ids.push(id);
+  applyIds(ids);
+  void persistOrder(previous);
+}
+
 function startDrag(id: number) {
   draggedHabitId.value = id;
   orderBeforeDrag = [...displayedHabits.value];
@@ -103,9 +125,26 @@ function moveDrag(point: { x: number; y: number }) {
     applyIds(reorderHabitIds(displayedHabits.value.map(habit => habit.id), draggedHabitId.value, targetId));
   }
 
+  // Auto-scroll with acceleration
   const bounds = habitList.value?.getBoundingClientRect();
-  if (bounds && point.y < bounds.top + 48) habitList.value?.scrollBy({ top: -36, behavior: 'smooth' });
-  if (bounds && point.y > bounds.bottom - 48) habitList.value?.scrollBy({ top: 36, behavior: 'smooth' });
+  const scrollZone = 80;
+  const baseSpeed = 8;
+  const maxSpeed = 40;
+
+  if (bounds) {
+    const topDist = point.y - bounds.top;
+    const bottomDist = bounds.bottom - point.y;
+
+    if (topDist < scrollZone) {
+      const ratio = 1 - (topDist / scrollZone);
+      const speed = Math.round(baseSpeed + (maxSpeed - baseSpeed) * ratio);
+      habitList.value?.scrollBy({ top: -speed });
+    } else if (bottomDist < scrollZone) {
+      const ratio = 1 - (bottomDist / scrollZone);
+      const speed = Math.round(baseSpeed + (maxSpeed - baseSpeed) * ratio);
+      habitList.value?.scrollBy({ top: speed });
+    }
+  }
 }
 
 function endDrag() {
@@ -150,8 +189,12 @@ useSeoMeta({
             :now="scheduleNow"
             :canMoveUp="canMove(index, -1)"
             :canMoveDown="canMove(index, 1)"
+            :canMoveToTop="index > 0"
+            :canMoveToBottom="index < displayedHabits.length - 1"
             @moveUp="moveHabit($event, -1)"
             @moveDown="moveHabit($event, 1)"
+            @moveToTop="moveHabitToTop"
+            @moveToBottom="moveHabitToBottom"
             @dragStart="startDrag"
             @dragMove="moveDrag"
             @dragEnd="endDrag" />

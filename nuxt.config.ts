@@ -11,6 +11,9 @@ export default defineNuxtConfig({
     preference: 'dark',
   },
   runtimeConfig: {
+    session: {
+      maxAge: 60 * 60 * 24 * 30, // 30 days — PWA stays logged in
+    },
     public: {
       version: pkg.version,
     },

@@ -97,8 +97,9 @@ function moveHabitToTop(id: number) {
   if (index <= 0) return;
   ids.splice(index, 1);
   ids.unshift(id);
+  draggedHabitId.value = id;
   applyIds(ids);
-  void persistOrder(previous);
+  void persistOrder(previous).finally(() => { draggedHabitId.value = null; });
 }
 
 function moveHabitToBottom(id: number) {
@@ -108,8 +109,9 @@ function moveHabitToBottom(id: number) {
   if (index === -1 || index === ids.length - 1) return;
   ids.splice(index, 1);
   ids.push(id);
+  draggedHabitId.value = id;
   applyIds(ids);
-  void persistOrder(previous);
+  void persistOrder(previous).finally(() => { draggedHabitId.value = null; });
 }
 
 function startDrag(id: number) {

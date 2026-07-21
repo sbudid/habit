@@ -28,6 +28,8 @@ const scheduleNow = ref(new Date());
 const displayedHabits = ref<Habit[]>([]);
 const habitList = ref<HTMLElement | null>(null);
 const draggedHabitId = ref<number | null>(null);
+const dragOffsetY = ref(0);
+const dragStartY = ref(0);
 let orderBeforeDrag: Habit[] = [];
 let saveSequence = 0;
 let midnightTimer: ReturnType<typeof setTimeout> | undefined;
@@ -116,15 +118,28 @@ function moveHabitToBottom(id: number) {
 
 function startDrag(id: number) {
   draggedHabitId.value = id;
+  dragStartY.value = 0;
+  dragOffsetY.value = 0;
   orderBeforeDrag = [...displayedHabits.value];
 }
 
 function moveDrag(point: { x: number; y: number }) {
   if (draggedHabitId.value === null) return;
+
+  // Set start Y on first move
+  if (dragStartY.value === 0) dragStartY.value = point.y;
+
+  // Calculate visual offset for dragged card
+  dragOffsetY.value = point.y - dragStartY.value;
+
+  // Reorder logic
   const target = document.elementFromPoint(point.x, point.y)?.closest<HTMLElement>('[data-habit-id]');
   const targetId = Number(target?.dataset.habitId);
   if (Number.isInteger(targetId) && targetId !== draggedHabitId.value && canReorderHabit(activeGroups.value, draggedHabitId.value, targetId)) {
     applyIds(reorderHabitIds(displayedHabits.value.map(habit => habit.id), draggedHabitId.value, targetId));
+    // Reset start position after reorder so offset stays relative to new DOM position
+    dragStartY.value = point.y;
+    dragOffsetY.value = 0;
   }
 
   // Auto-scroll with acceleration
@@ -153,6 +168,8 @@ function endDrag() {
   if (draggedHabitId.value === null) return;
   const changed = displayedHabits.value.some((habit, index) => habit.id !== orderBeforeDrag[index]?.id);
   draggedHabitId.value = null;
+  dragOffsetY.value = 0;
+  dragStartY.value = 0;
   if (changed) void persistOrder(orderBeforeDrag);
 }
 
@@ -193,13 +210,17 @@ useSeoMeta({
             :canMoveDown="canMove(index, 1)"
             :canMoveToTop="index > 0"
             :canMoveToBottom="index < displayedHabits.length - 1"
+            :dragOffsetY="draggedHabitId === habit.id ? dragOffsetY : 0"
+            :draggedHabitId="draggedHabitId"
             @moveUp="moveHabit($event, -1)"
             @moveDown="moveHabit($event, 1)"
             @moveToTop="moveHabitToTop"
             @moveToBottom="moveHabitToBottom"
             @dragStart="startDrag"
             @dragMove="moveDrag"
-            @dragEnd="endDrag" />
+            @dragEnd="endDrag"
+            class="transition-transform duration-200 ease-out"
+            :class="{ '!duration-0': draggedHabitId === habit.id }" />
         </div>
 
         <EmptyHabits v-if="isMyProfile ? emptyMyHabits : emptyHabits" :isMyProfile="isMyProfile" />

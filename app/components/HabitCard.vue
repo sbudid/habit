@@ -4,7 +4,7 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import { DEFAULT_HABIT_COLOR, normalizeHabitColor } from '../utils/habitUi.mjs';
 import { getHabitScheduleState } from '../utils/habitSchedule.mjs';
 
-const props = withDefaults(defineProps<{ habit: Habit; isMyProfile: boolean; canMoveUp?: boolean; canMoveDown?: boolean; canMoveToTop?: boolean; canMoveToBottom?: boolean; timeZone?: string; now?: Date }>(), { timeZone: 'UTC', now: () => new Date() });
+const props = withDefaults(defineProps<{ habit: Habit; isMyProfile: boolean; canMoveUp?: boolean; canMoveDown?: boolean; canMoveToTop?: boolean; canMoveToBottom?: boolean; timeZone?: string; now?: Date; dragOffsetY?: number; draggedHabitId?: number | null }>(), { timeZone: 'UTC', now: () => new Date(), dragOffsetY: 0, draggedHabitId: null });
 const emit = defineEmits<{
   (event: 'moveUp' | 'moveDown', id: number): void;
   (event: 'moveToTop' | 'moveToBottom', id: number): void;
@@ -17,6 +17,7 @@ const queryCache = useQueryCache();
 const renderMarkdown = (text: string) => marked(text);
 const getCompletionRate = (habit: Habit) => Math.min(100, Math.round((habit.completeDays.length / 40) * 100));
 const habitColor = computed(() => normalizeHabitColor(props.habit.color));
+const isDragging = computed(() => props.draggedHabitId === props.habit.id);
 const scheduleState = computed(() => getHabitScheduleState(props.habit, { timeZone: props.timeZone, now: props.now }));
 
 const openHabitModal = ref(false);
@@ -171,8 +172,17 @@ function finishHandleDrag() {
 <template>
   <ContentBox
     :data-habit-id="habit.id"
-    class="mx-2 mb-1 flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-400/5 px-1.5 py-0.5 transition hover:bg-white/5"
-    :class="{ 'opacity-45 grayscale-[.2]': !scheduleState.isActiveToday && !isTodayCompleted(habit) }">
+    :style="isDragging ? {
+      transform: `translateY(${dragOffsetY}px)`,
+      zIndex: 50,
+      position: 'relative' as const,
+      opacity: 0.9,
+      scale: '1.02',
+      boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+      transition: 'none',
+    } : { transition: 'transform 0.2s ease-out' }"
+    class="mx-2 mb-1 flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-400/5 px-1.5 py-0.5 hover:bg-white/5"
+    :class="[{ 'opacity-45 grayscale-[.2]': !scheduleState.isActiveToday && !isTodayCompleted(habit) }, isDragging ? '' : 'transition-[background-color]']">
     <button
       v-if="isMyProfile"
       type="button"

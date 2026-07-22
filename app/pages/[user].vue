@@ -136,8 +136,11 @@ function moveDrag(point: { x: number; y: number }) {
   // Calculate visual offset for dragged card
   dragOffsetY.value = point.y - dragStartY.value;
 
-  // Reorder logic
+  // Reorder logic — temporarily hide dragged card so elementFromPoint sees through
+  const draggedEl = habitList.value?.querySelector<HTMLElement>(`[data-habit-id="${draggedHabitId.value}"]`);
+  if (draggedEl) draggedEl.style.visibility = 'hidden';
   const target = document.elementFromPoint(point.x, point.y)?.closest<HTMLElement>('[data-habit-id]');
+  if (draggedEl) draggedEl.style.visibility = '';
   const targetId = Number(target?.dataset.habitId);
   if (Number.isInteger(targetId) && targetId !== draggedHabitId.value && canReorderHabit(activeGroups.value, draggedHabitId.value, targetId)) {
     applyIds(reorderHabitIds(displayedHabits.value.map(habit => habit.id), draggedHabitId.value, targetId));

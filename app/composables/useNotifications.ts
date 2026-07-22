@@ -145,10 +145,22 @@ export function useNotifications() {
     return streak;
   };
 
-  const getEveningRecap = (habits: HabitData[]): { title: string; body: string } => {
+  const syncHabits = (habits: HabitData[]) => {
+    try {
+      localStorage.setItem('rutina-habits', JSON.stringify(habits));
+    } catch {}
+  };
+
+  const getEveningRecap = (habits?: HabitData[]): { title: string; body: string } => {
+    const data = habits || (() => {
+      try {
+        const raw = localStorage.getItem('rutina-habits');
+        return raw ? JSON.parse(raw) as HabitData[] : [];
+      } catch { return []; }
+    })();
     const today = new Date().toISOString().split('T')[0];
-    const total = habits.length;
-    const done = habits.filter(h => h.completeDays.includes(today)).length;
+    const total = data.length;
+    const done = data.filter(h => h.completeDays.includes(today)).length;
 
     if (total === 0) return { title: '📊 Hari ini', body: 'Belum ada habit yang diatur. Yuk tambah habit baru!' };
     if (done === total) return { title: '🎉 Sempurna!', body: `Semua ${total} habit selesai hari ini! Besok lanjut ya!` };
@@ -184,19 +196,21 @@ export function useNotifications() {
       if (currentTime === '21:00' && lastEvening !== today) {
         lastEvening = today;
         try {
-          const habitsRaw = localStorage.getItem('rutina-habits');
-          const habits: HabitData[] = habitsRaw ? JSON.parse(habitsRaw) : [];
-          const recap = getEveningRecap(habits);
+          const recap = getEveningRecap();
           sendNotification(recap.title, recap.body);
 
-          for (const habit of habits) {
-            const streak = calculateStreak(habit.completeDays);
-            const streakMsg = getStreakMessage(streak);
-            if (streakMsg) {
-              setTimeout(() => sendNotification(streakMsg.title, streakMsg.body), 3000);
-              break;
+          try {
+            const raw = localStorage.getItem('rutina-habits');
+            const habits: HabitData[] = raw ? JSON.parse(raw) : [];
+            for (const habit of habits) {
+              const streak = calculateStreak(habit.completeDays);
+              const streakMsg = getStreakMessage(streak);
+              if (streakMsg) {
+                setTimeout(() => sendNotification(streakMsg.title, streakMsg.body), 3000);
+                break;
+              }
             }
-          }
+          } catch {}
         } catch {}
       }
     }, 30_000);
@@ -262,6 +276,7 @@ export function useNotifications() {
     clearReminder,
     testNotification,
     sendNotification,
+    syncHabits,
     getEveningRecap,
     calculateStreak,
     getStreakMessage,

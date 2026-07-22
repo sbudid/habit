@@ -180,6 +180,7 @@ function finishHandleDrag() {
       scale: '1.02',
       boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
       transition: 'none',
+      pointerEvents: 'none' as const,
     } : { transition: 'transform 0.2s ease-out' }"
     class="mx-2 mb-1 flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-400/5 px-1.5 py-0.5 hover:bg-white/5"
     :class="[{ 'opacity-45 grayscale-[.2]': !scheduleState.isActiveToday && !isTodayCompleted(habit) }, isDragging ? '' : 'transition-[background-color]']">

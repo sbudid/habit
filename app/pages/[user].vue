@@ -3,6 +3,7 @@ import { getHabitScheduleState, sortHabitsForToday } from '../utils/habitSchedul
 import { canReorderHabit, moveHabitIds, reorderHabitIds } from '../utils/habitReorder.mjs';
 
 const { session } = useUserSession();
+const { syncHabits } = useNotifications();
 const queryCache = useQueryCache();
 const login = useRoute().params.user as string;
 
@@ -63,6 +64,9 @@ watch(
   ([nextHabits, zone, now]) => {
     if (draggedHabitId.value !== null) return;
     displayedHabits.value = sortHabitsForToday(nextHabits, { timeZone: zone, now });
+    if (isMyProfile.value && nextHabits.length > 0) {
+      syncHabits(nextHabits.map(h => ({ title: h.title, completeDays: h.completeDays })));
+    }
   },
   { immediate: true, deep: true },
 );

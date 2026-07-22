@@ -23,12 +23,19 @@ useSeoMeta({
   keywords: 'habit tracker indonesia, aplikasi rutinitas keluarga, tracker kebiasaan, jurnal harian, rutinitas anak, habit keluarga',
 });
 
-const { init } = useNotifications();
-const { loggedIn } = useUserSession();
+const { init, syncHabits } = useNotifications();
+const { loggedIn, session } = useUserSession();
 const showNotifSettings = ref(false);
 
-onMounted(() => {
+onMounted(async () => {
   init();
+  // Sync habits to localStorage on app load so notification scheduler can read them
+  if (loggedIn.value && session.value?.user?.login) {
+    try {
+      const habits = await $fetch('/api/habits') as Array<{ title: string; completeDays: string[] }>;
+      if (habits?.length) syncHabits(habits.map(h => ({ title: h.title, completeDays: h.completeDays })));
+    } catch {}
+  }
 });
 </script>
 

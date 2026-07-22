@@ -23,7 +23,54 @@ export function useNotifications() {
       reminderTime.value = saved;
       startScheduler();
     }
+
+    // Re-check notifications when app comes back to foreground
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        permission.value = Notification.permission;
+        if (reminderTime.value) checkMissedNotifications();
+      }
+    });
   };
+
+  const checkMissedNotifications = () => {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const today = now.toISOString().split('T')[0];
+    const sentKey = `rutina-sent-${today}`;
+
+    let sent: Record<string, boolean> = {};
+    try { sent = JSON.parse(localStorage.getItem(sentKey) || '{}'); } catch {}
+
+    const shouldSend = (key: string, windowStart: string, windowEnd: string) =>
+      !sent[key] && currentTime >= windowStart && currentTime <= windowEnd;
+
+    if (reminderTime.value && shouldSend('morning', reminderTime.value, addMinutes(reminderTime.value, 30))) {
+      const msg = morningMessages[Math.floor(Math.random() * morningMessages.length)];
+      sendNotification(msg.title, msg.body);
+      sent.morning = true;
+    }
+
+    if (shouldSend('midday', '12:00', '13:00')) {
+      const msg = middayMessages[Math.floor(Math.random() * middayMessages.length)];
+      sendNotification(msg.title, msg.body);
+      sent.midday = true;
+    }
+
+    if (shouldSend('evening', '21:00', '23:59')) {
+      const recap = getEveningRecap();
+      sendNotification(recap.title, recap.body);
+      sent.evening = true;
+    }
+
+    try { localStorage.setItem(sentKey, JSON.stringify(sent)); } catch {}
+  };
+
+  function addMinutes(time: string, minutes: number): string {
+    const [h, m] = time.split(':').map(Number);
+    const total = h * 60 + m + minutes;
+    return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+  }
 
   const requestPermission = async (): Promise<boolean> => {
     lastError.value = '';

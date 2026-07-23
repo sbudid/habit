@@ -26,11 +26,9 @@ const features = [
   },
 ];
 
-watchEffect(async () => {
-  if (user.value) {
-    await navigateTo(`/${user.value.login}`);
-  }
-});
+watch(user, (u) => {
+  if (u?.login) navigateTo(`/${u.login}`);
+}, { immediate: true });
 </script>
 
 <template>

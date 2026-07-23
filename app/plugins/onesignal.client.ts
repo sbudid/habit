@@ -4,12 +4,13 @@ export default defineNuxtPlugin(() => {
     const appId = config.public.onesignalAppId as string;
     if (!appId) return;
 
+    const { session } = useUserSession();
+
     // @ts-ignore
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     // @ts-ignore
     window.OneSignalDeferred.push(async (OneSignal: any) => {
       try {
-        // OneSignal registers its own SW (OneSignalSDKWorker.js) — no conflict with Workbox sw.js
         await OneSignal.init({
           appId,
           serviceWorkerParam: { scope: '/' },
@@ -17,6 +18,13 @@ export default defineNuxtPlugin(() => {
           welcomeNotification: { disable: true },
         });
         console.log('[OneSignal] init OK, app:', appId);
+
+        // Set external user ID for personalized notifications (streak etc.)
+        const userId = session.value?.user?.id;
+        if (userId) {
+          await OneSignal.login(String(userId));
+          console.log('[OneSignal] external user ID set:', userId);
+        }
       } catch (e) {
         console.warn('[OneSignal] init failed:', e);
       }

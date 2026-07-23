@@ -1,0 +1,23 @@
+name = "rutina-notif-scheduler"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[triggers]
+crons = [
+  "0 21 * * *",   # 04:00 WIB — selamat pagi
+  "0 1 * * *",    # 08:00 WIB — pagi + streak check
+  "0 5 * * *",    # 12:00 WIB — siang reminder
+  "0 8 * * *",    # 15:00 WIB — sore
+  "0 11 * * *",   # 18:00 WIB — maghrib
+  "0 14 * * *",   # 21:00 WIB — rekap malam
+]
+
+[vars]
+ONESIGNAL_APP_ID = "ce05a4b4-1bfb-4718-8d8d-c969df3daa4e"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "habit-db"
+database_id = "badae66a-6212-4fe8-8d9b-81ed871b2fac"
+
+# ONESIGNAL_REST_API_KEY set as secret via: wrangler secret put ONESIGNAL_REST_API_KEY

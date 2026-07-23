@@ -1,20 +1,21 @@
 export default defineNuxtPlugin(() => {
-  // OneSignal SDK loaded via nuxt.config.ts head script
-  // Just register the init via OneSignalDeferred (created by SDK)
+  // OneSignal SDK loaded via nuxt.config.ts app.head.script
+  // OneSignalSDKWorker.js handles push events in SW
+  // This plugin initializes OneSignal once SDK is ready
   if (import.meta.client) {
     const config = useRuntimeConfig();
     const appId = config.public.onesignalAppId as string;
     if (!appId) return;
 
-    // @ts-ignore
+    // @ts-ignore — OneSignalDeferred is created by OneSignal SDK
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     // @ts-ignore
     window.OneSignalDeferred.push(async (OneSignal: any) => {
       try {
         await OneSignal.init({
           appId,
+          // Let OneSignal use its own SW (OneSignalSDKWorker.js at /)
           serviceWorkerParam: { scope: '/' },
-          serviceWorkerPath: 'sw.js',
           notifyButton: { enable: false },
           welcomeNotification: { disable: true },
         });

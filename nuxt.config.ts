@@ -52,7 +52,9 @@ export default defineNuxtConfig({
       navigateFallback: '/',
       navigateFallbackDenylist: [/^\/api\/.*/],
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
-      // OneSignal manages its own SW separately — no importScripts here
+      importScripts: [
+        'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js',
+      ],
       runtimeCaching: [
         {
           urlPattern: /^\/api\/.*/i,

@@ -13,11 +13,14 @@ export default defineNuxtPlugin(() => {
       try {
         await OneSignal.init({
           appId,
+          // Use Workbox sw.js (already imports OneSignalSDK.sw.js)
+          // No separate OneSignal SW — prevents scope conflict loop
+          serviceWorkerPath: '/sw.js',
           serviceWorkerParam: { scope: '/' },
           notifyButton: { enable: false },
           welcomeNotification: { disable: true },
         });
-        console.log('[OneSignal] init OK, app:', appId);
+        console.log('[OneSignal] init OK via Workbox sw.js, app:', appId);
 
         // Set external user ID for personalized notifications (streak etc.)
         const userId = session.value?.user?.id;

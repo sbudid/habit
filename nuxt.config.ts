@@ -50,11 +50,9 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: '/',
+      navigateFallbackDenylist: [/^\/api\/.*/],
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
-      importScripts: [
-        'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js',
-      ],
-      // Don't cache API calls or auth endpoints
+      // OneSignal manages its own SW separately — no importScripts here
       runtimeCaching: [
         {
           urlPattern: /^\/api\/.*/i,

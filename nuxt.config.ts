@@ -14,8 +14,11 @@ export default defineNuxtConfig({
     session: {
       maxAge: 60 * 60 * 24 * 30, // 30 days — PWA stays logged in
     },
+    onesignalAppId: '',
+    onesignalRestApiKey: '',
     public: {
       version: pkg.version,
+      onesignalAppId: '',
     },
   },
   pwa: {
@@ -41,6 +44,9 @@ export default defineNuxtConfig({
     workbox: {
       navigateFallback: '/',
       globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+      importScripts: [
+        'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js',
+      ],
       // Don't cache API calls or auth endpoints
       runtimeCaching: [
         {

@@ -112,6 +112,55 @@ export function useNotifications() {
     reminderTime.value = time;
     localStorage.setItem(REMINDER_KEY, time);
     startScheduler();
+
+    // Schedule server-side push via OneSignal (works even when app closed)
+    try {
+      const now = new Date();
+      const [h, m] = time.split(':').map(Number);
+      const scheduled = new Date(now);
+      scheduled.setHours(h, m, 0, 0);
+      // If time already passed today, schedule for tomorrow
+      if (scheduled <= now) scheduled.setDate(scheduled.getDate() + 1);
+
+      await $fetch('/api/notifications/send', {
+        method: 'POST',
+        body: {
+          title: '☀️ Selamat pagi!',
+          message: 'Yuk mulai hari dengan habit pertama. Kecil tapi konsisten!',
+          sendAt: scheduled.toISOString(),
+        },
+      }).catch(() => {}); // silent fail — client scheduler still works
+
+      // Schedule midday (12:00)
+      const midday = new Date(now);
+      midday.setHours(12, 0, 0, 0);
+      if (midday <= now) midday.setDate(midday.getDate() + 1);
+
+      await $fetch('/api/notifications/send', {
+        method: 'POST',
+        body: {
+          title: '🔥 Jangan lupa!',
+          message: 'Sudah siang — cek habit yang belum dicentang.',
+          sendAt: midday.toISOString(),
+        },
+      }).catch(() => {});
+
+      // Schedule evening recap (21:00)
+      const evening = new Date(now);
+      evening.setHours(21, 0, 0, 0);
+      if (evening <= now) evening.setDate(evening.getDate() + 1);
+
+      const recap = getEveningRecap();
+      await $fetch('/api/notifications/send', {
+        method: 'POST',
+        body: {
+          title: recap.title,
+          message: recap.body,
+          sendAt: evening.toISOString(),
+        },
+      }).catch(() => {});
+    } catch {} // server scheduling is best-effort
+
     return true;
   };
 

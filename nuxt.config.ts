@@ -21,6 +21,13 @@ export default defineNuxtConfig({
       onesignalAppId: '',
     },
   },
+  app: {
+    head: {
+      script: [
+        { src: 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSdk.page.js', defer: true },
+      ],
+    },
+  },
   pwa: {
     registerType: 'autoUpdate',
     manifest: {
